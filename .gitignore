@@ -1,0 +1,6 @@
+.DS_Store
+.vscode/
+.env
+*.log
+api/config.php
+api/skillswap_db_full.sql
