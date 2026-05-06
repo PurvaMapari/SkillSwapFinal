@@ -6,26 +6,36 @@ $conn = getConnection();
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-$userId = intval($data['sender_id']);
-$skillOffered = trim($data['skill_offered']);
-$skillWanted = trim($data['skill_wanted']);
-$skillLevel = trim($data['skill_level']);
-$category = trim($data['category']);
-$message = trim($data['message']);
+if (!$data) {
+    $data = $_POST;
+}
+
+$userId = intval($data['sender_id'] ?? 0);
+$receiverId = intval($data['receiver_id'] ?? 0);
+$skillOffered = trim($data['skill_offered'] ?? '');
+$skillWanted = trim($data['skill_wanted'] ?? '');
+$message = trim($data['message'] ?? '');
+
+if (!$userId || !$receiverId || !$skillOffered || !$skillWanted) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'sender_id, receiver_id, skill_offered, and skill_wanted are required.'
+    ]);
+    exit;
+}
 
 $stmt = $conn->prepare("
-INSERT INTO public_skill_offers
-(user_id, skill_offered, skill_wanted, skill_level, category, message)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO swap_requests
+(sender_id, receiver_id, skill_offered, skill_wanted, message)
+VALUES (?, ?, ?, ?, ?)
 ");
 
 $stmt->bind_param(
-'isssss',
+'iisss',
 $userId,
+$receiverId,
 $skillOffered,
 $skillWanted,
-$skillLevel,
-$category,
 $message
 );
 

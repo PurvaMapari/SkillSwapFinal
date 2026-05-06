@@ -222,21 +222,21 @@
           <input type="text" id="skill_wanted" name="skill_wanted" placeholder="e.g., Python, Graphic Design..."
             required>
         </div>
-<div class="form-group">
-  <label for="category">Category</label>
+        <div class="form-group">
+          <label for="category">Category</label>
 
-  <select id="category" name="category" required>
-    <option value="">Select category</option>
-    <option value="Programming">Programming</option>
-    <option value="Design">Design</option>
-    <option value="Music">Music</option>
-    <option value="Marketing">Marketing</option>
-    <option value="Photography">Photography</option>
-    <option value="Business">Business</option>
-    <option value="Language">Language</option>
-    <option value="Fitness">Fitness</option>
-  </select>
-</div>
+          <select id="category" name="category" required>
+            <option value="">Select category</option>
+            <option value="Programming">Programming</option>
+            <option value="Design">Design</option>
+            <option value="Music">Music</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Photography">Photography</option>
+            <option value="Business">Business</option>
+            <option value="Language">Language</option>
+            <option value="Fitness">Fitness</option>
+          </select>
+        </div>
         <div class="form-group">
           <label for="skill_offered">Skill you can offer</label>
           <select id="skill_offered" name="skill_offered" required>
@@ -263,10 +263,17 @@
     if (!userStr) window.location.href = '../login.html';
     const currentUser = JSON.parse(userStr);
 
-    
-    
-  
-   
+    const params = new URLSearchParams(window.location.search);
+    const teacherId = parseInt(params.get('teacher_id') || '', 10);
+    const preselectedSkill = params.get('skill') || '';
+
+    const formError = document.getElementById('formError');
+    const formSuccess = document.getElementById('formSuccess');
+
+
+
+
+
 
     const skillWantedInput = document.getElementById('skill_wanted');
     const select = document.getElementById('skill_offered');
@@ -274,7 +281,16 @@
     const previewName = document.getElementById('skillPreviewName');
     const previewWanted = document.getElementById('previewWanted');
 
-  
+    if (preselectedSkill) {
+      skillWantedInput.value = preselectedSkill;
+    }
+
+    if (!teacherId) {
+      formError.textContent = 'Missing teacher_id in the swap link.';
+      formError.style.display = 'block';
+    }
+
+
 
     // Fetch user's skills
     fetch(`../api/getuserskill.php?user_id=${currentUser.id}`)
@@ -313,9 +329,6 @@
       }
     });
 
-    const formError = document.getElementById('formError');
-    const formSuccess = document.getElementById('formSuccess');
-    
 
 
     document.getElementById('swapForm').addEventListener('submit', function (e) {
@@ -336,10 +349,10 @@
         return;
       }
       if (!document.getElementById('category').value) {
-  formError.textContent = 'Please select a category.';
-  formError.style.display = 'block';
-  return;
-}
+        formError.textContent = 'Please select a category.';
+        formError.style.display = 'block';
+        return;
+      }
 
 
       const btn = this.querySelector('.btn-submit');
@@ -355,15 +368,16 @@
       fetch('../api/swap_request.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-  sender_id: currentUser.id,
-  
-  skill_offered: skillTitle,
-  skill_wanted: skillWantedInput.value.trim(),
-  skill_level: skillLevel,
-  category: document.getElementById('category').value,
-  message: document.getElementById('message').value.trim()
-})
+        body: JSON.stringify({
+          sender_id: currentUser.id,
+          receiver_id: teacherId,
+
+          skill_offered: skillTitle,
+          skill_wanted: skillWantedInput.value.trim(),
+          skill_level: skillLevel,
+          category: document.getElementById('category').value,
+          message: document.getElementById('message').value.trim()
+        })
       })
         .then(res => res.json())
         .then(res => {

@@ -11,7 +11,7 @@ if (!$user_id) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id, title, description, type, category, skill_level FROM skills WHERE user_id = ? AND type = 'offer' ORDER BY created_at DESC");
+$stmt = $conn->prepare("SELECT id, title, description, type, category, level AS skill_level FROM skills WHERE user_id = ? AND type = 'offer' ORDER BY created_at DESC");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

@@ -42,8 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = trim($data['description']        ?? '');
     $type        = trim($data['type']               ?? 'offer');
     $category    = trim($data['category']           ?? '');
-$skill_level =
-trim($data['skill_level'] ?? 'Beginner');
+$skill_level = trim($data['skill_level'] ?? $data['level'] ?? 'Beginner');
 
     if (!$userId || !$title) {
         echo json_encode(['success' => false, 'message' => 'user_id and title are required.']);
@@ -67,7 +66,7 @@ $stmt = $conn->prepare(
         description,
         type,
         category,
-        skill_level
+        level
     )
     VALUES (?, ?, ?, ?, ?, ?)"
 );

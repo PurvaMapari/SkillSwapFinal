@@ -48,7 +48,7 @@ Simply open `index.html` in your browser — or use VS Code Live Server:
 - **Skill Detail** (`pages/skill-detail.html`) - View skill and teacher
 - **Profile** (`pages/profile.html`) - Own profile with bio and skills
 - **Other Profile** (`pages/other-profile.html`) - View another user's profile and leave a review
-- **Swap Request** (`pages/swap-request.html`) - Send swap request with message
+- **Swap Request** (`pages/swap-request.html`) - Start from Explore to choose a teacher, then send the request with a message
 - **Dashboard** (`pages/dashboard.html`) - Incoming/outgoing requests, active swaps
 - **Messages** (`pages/messages.html`) - Conversation with swap partner
 - **Auth** (`login.html`, `signup.html`) - Login and Sign Up

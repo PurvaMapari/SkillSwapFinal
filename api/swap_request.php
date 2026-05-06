@@ -14,11 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$data) $data = $_POST;
 
     $senderId     = intval($data['sender_id']     ?? 0);
-  
-    $skillOffered = trim($data['skill_offered']   ?? '');
-    $skillWanted  = trim($data['skill_wanted']    ?? '');
-    $skillLevel = trim($data['skill_level'] ?? '');
-    $category = trim($data['category'] ?? '');
+    $receiverId   = intval($data['receiver_id']    ?? 0);
+    $skillOffered = trim($data['skill_offered']    ?? '');
+    $skillWanted  = trim($data['skill_wanted']     ?? '');
     $message      = trim($data['message']         ?? '');
     $action       = trim($data['action']          ?? '');
 
@@ -45,31 +43,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // ── CREATE NEW REQUEST ──
-    if (!$senderId || !$skillOffered || !$skillWanted) {
-        echo json_encode(['success' => false, 'message' => 'All fields are required.']);
+    if (!$senderId || !$receiverId || !$skillOffered || !$skillWanted) {
+        echo json_encode(['success' => false, 'message' => 'sender_id, receiver_id, skill_offered, and skill_wanted are required.']);
         exit;
     }
-   
+
 
   $stmt = $conn->prepare("
 INSERT INTO swap_requests (
     sender_id,
+    receiver_id,
     skill_offered,
     skill_wanted,
-    skill_level,
-    category,
     message
 )
-VALUES (?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?)
 ");
 
 $stmt->bind_param(
-    'isssss',
+    'iisss',
     $senderId,
+    $receiverId,
     $skillOffered,
     $skillWanted,
-    $skillLevel,
-    $category,
     $message
 );
 
@@ -92,19 +88,39 @@ if ($stmt->execute()) {
 
 // ── GET — list requests for a user ──────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-
-    $result = $conn->query("
-        SELECT sr.*, u.name AS sender_name
-        FROM swap_requests sr
-        JOIN users u ON sr.sender_id = u.id
-        ORDER BY sr.created_at DESC
-    ");
+    if (isset($_GET['user_id'])) {
+        $uid = intval($_GET['user_id']);
+        $stmt = $conn->prepare(" 
+            SELECT sr.*, us.name AS sender_name, ur.name AS receiver_name
+            FROM swap_requests sr
+            JOIN users us ON sr.sender_id = us.id
+            JOIN users ur ON sr.receiver_id = ur.id
+            WHERE sr.sender_id = ? OR sr.receiver_id = ?
+            ORDER BY sr.created_at DESC
+        ");
+        $stmt->bind_param('ii', $uid, $uid);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    } else {
+        $stmt = $conn->prepare(" 
+            SELECT sr.*, us.name AS sender_name, ur.name AS receiver_name
+            FROM swap_requests sr
+            JOIN users us ON sr.sender_id = us.id
+            JOIN users ur ON sr.receiver_id = ur.id
+            ORDER BY sr.created_at DESC
+        ");
+        $stmt->execute();
+        $result = $stmt->get_result();
+    }
 
     $requests = [];
 
     while ($row = $result->fetch_assoc()) {
         $requests[] = $row;
     }
+
+    $stmt->close();
+    $conn->close();
 
     echo json_encode([
         'success' => true,
