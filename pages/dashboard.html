@@ -78,6 +78,13 @@
       justify-content: flex-end;
     }
 
+    .dashboard-logout {
+      position: fixed;
+      top: 1.2rem;
+      right: 1.5rem;
+      z-index: 10;
+    }
+
     .btn-nav-logout {
       font-size: 0.875rem;
       font-weight: 500;
@@ -679,14 +686,14 @@
       <a href="about.html">About</a>
       <a href="explore.html">Explore</a>
       <a href="dashboard.html" class="active">Dashboard</a>
-      <a href="contact.html">Contact Us</a>
+      <a href="profile.html">Profile</a>
     </nav>
     <div class="nav-right">
-      <a href="profile.html" class="btn-nav-logout">Profile</a>
-      <a href="../index.html" class="btn-nav-logout">Logout</a>
       <button class="nav-toggle" id="navToggle"><span></span><span></span><span></span></button>
     </div>
   </nav>
+
+  <a href="../index.html" class="btn-nav-logout dashboard-logout">Logout</a>
 
   <div class="page-header">
     <div class="page-title">My <span>Dashboard</span></div>
@@ -755,15 +762,15 @@
         .then(res => res.json())
         .then(res => {
           if (!res.success) return;
-          
+
           const incomingList = document.getElementById('incomingList');
           const outgoingList = document.getElementById('outgoingList');
           const activeList = document.getElementById('activeList');
-          
+
           incomingList.innerHTML = '';
           outgoingList.innerHTML = '';
           activeList.innerHTML = '';
-          
+
           let inCount = 0;
           let outCount = 0;
           let activeCount = 0;
@@ -772,10 +779,10 @@
             const isIncoming = req.receiver_id === currentUser.id;
             const otherName = isIncoming ? req.sender_name : req.receiver_name;
             const otherId = isIncoming ? req.sender_id : req.receiver_id;
-            const initials = otherName.substring(0,2).toUpperCase() || 'U';
-            
+            const initials = otherName.substring(0, 2).toUpperCase() || 'U';
+
             // Format date
-            const date = new Date(req.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+            const date = new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
             let badgeHtml = '';
             let actionHtml = '';
@@ -864,9 +871,9 @@
           if (activeCount === 0) activeList.innerHTML = '<p class="section-note">No active swaps yet.</p>';
 
           const badgeIn = document.getElementById('incomingBadge');
-          if(badgeIn) badgeIn.textContent = inCount;
+          if (badgeIn) badgeIn.textContent = inCount;
           const badgeOut = document.getElementById('outgoingBadge');
-          if(badgeOut) badgeOut.textContent = outCount;
+          if (badgeOut) badgeOut.textContent = outCount;
         });
     }
 
@@ -878,16 +885,16 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'update_status', request_id: id, status: status })
       })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          fetchDashboard();
-          if (status === 'accepted') showAlert('success', `✅ Swap with ${name} accepted!`);
-          else showAlert('error', `✕ Request from ${name} rejected.`);
-        } else {
-          showAlert('error', res.message || 'Failed to update status.');
-        }
-      });
+        .then(res => res.json())
+        .then(res => {
+          if (res.success) {
+            fetchDashboard();
+            if (status === 'accepted') showAlert('success', `✅ Swap with ${name} accepted!`);
+            else showAlert('error', `✕ Request from ${name} rejected.`);
+          } else {
+            showAlert('error', res.message || 'Failed to update status.');
+          }
+        });
     }
 
     // jquery added

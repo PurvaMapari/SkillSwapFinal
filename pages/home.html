@@ -56,6 +56,30 @@
       justify-content: flex-end;
     }
 
+    .home-logout {
+      position: fixed;
+      top: 1.2rem;
+      right: 1.5rem;
+      z-index: 10;
+    }
+
+    .btn-nav-logout {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--ink3);
+      border: 1px solid transparent;
+      border-radius: var(--r-btn);
+      padding: 6px 16px;
+      transition: all 0.2s;
+    }
+
+    .btn-nav-logout:hover {
+      color: var(--flame-lt);
+      border-color: var(--flame);
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.25);
+      background: transparent;
+    }
+
     .nav-toggle {
       display: none;
       flex-direction: column;
@@ -269,13 +293,15 @@
       <a href="about.html">About</a>
       <a href="explore.html">Explore</a>
       <a href="dashboard.html">Dashboard</a>
-      <a href="contact.html">Contact Us</a>
+      <a href="profile.html">Profile</a>
     </nav>
 
     <div class="nav-right">
       <button class="nav-toggle" id="navToggle"><span></span><span></span><span></span></button>
     </div>
   </nav>
+
+  <a href="../index.html" class="btn-nav-logout home-logout">Logout</a>
 
   <main class="main-content">
     <div class="hero-card">

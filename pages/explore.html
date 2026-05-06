@@ -66,24 +66,11 @@
       justify-content: flex-end;
     }
 
-    .nav-search-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--ink3);
-      display: flex;
-      align-items: center;
-      padding: 6px;
-      transition: color 0.2s;
-    }
-
-    .nav-search-btn:hover {
-      color: var(--ink);
-    }
-
-    .nav-search-btn svg {
-      width: 18px;
-      height: 18px;
+    .explore-logout {
+      position: fixed;
+      top: 1.2rem;
+      right: 1.5rem;
+      z-index: 10;
     }
 
     .nav-dropdown {
@@ -621,15 +608,9 @@
       <a href="about.html">About</a>
       <a href="explore.html" class="active">Explore</a>
       <a href="dashboard.html">Dashboard</a>
-      <a href="contact.html">Contact Us</a>
+      <a href="profile.html">Profile</a>
     </nav>
     <div class="nav-right">
-      <button class="nav-search-btn" aria-label="Search" id="navSearchBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-      </button>
       <div class="nav-dropdown">
         <button class="nav-menu-btn" id="menuBtn">☰</button>
         <div class="dropdown-menu" id="dropdownMenu">
@@ -643,6 +624,8 @@
       </div>
     </div>
   </nav>
+
+  <a href="../index.html" class="btn-nav-logout explore-logout">Logout</a>
 
   <div class="hero-bar">
     <div class="hero-bar-inner">
@@ -701,10 +684,13 @@
     menuBtn.addEventListener('click', e => { e.stopPropagation(); dropdownMenu.classList.toggle('open'); });
     document.addEventListener('click', () => dropdownMenu.classList.remove('open'));
 
-    document.getElementById('navSearchBtn').addEventListener('click', () => {
-      document.getElementById('searchInput').focus();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    const navSearchBtn = document.getElementById('navSearchBtn');
+    if (navSearchBtn) {
+      navSearchBtn.addEventListener('click', () => {
+        document.getElementById('searchInput').focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
 
     // Skill card filtering and sorting
     const allCards = Array.from(document.querySelectorAll('.skill-card'));
@@ -780,55 +766,55 @@
       prevBtn.disabled = currentPage === 1;
       nextBtn.disabled = currentPage === totalPages;
     }
-if (prevBtn) {
-  prevBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-      currentPage--;
-      updatePagination();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          updatePagination();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
     }
-  });
-}
     if (nextBtn) {
-  nextBtn.addEventListener('click', () => {
-    if (currentPage < totalPages) {
-      currentPage++;
-      updatePagination();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          updatePagination();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
     }
-  });
-}
   </script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="../js/main.js"></script>
   <!-- applyFilters(); -->
-   <script>
+  <script>
 
-const skillsGrid =
-document.getElementById('skillsGrid');
+    const skillsGrid =
+      document.getElementById('skillsGrid');
 
-fetch('../api/skills.php')
+    fetch('../api/skills.php')
 
-.then(res => res.json())
+      .then(res => res.json())
 
-.then(data => {
+      .then(data => {
 
-  if (!data.success) return;
+        if (!data.success) return;
 
-  skillsGrid.innerHTML = '';
+        skillsGrid.innerHTML = '';
 
-  data.data.forEach(skill => {
+        data.data.forEach(skill => {
 
-    const card =
-    document.createElement('div');
+          const card =
+            document.createElement('div');
 
-    card.className = 'skill-card';
+          card.className = 'skill-card';
 
-    card.dataset.cat =
-    (skill.category || 'general')
-    .toLowerCase();
+          card.dataset.cat =
+            (skill.category || 'general')
+              .toLowerCase();
 
-    card.innerHTML = `
+          card.innerHTML = `
 
       <div class="skill-card-category">
         ${skill.category || 'General'}
@@ -888,19 +874,19 @@ fetch('../api/skills.php')
       </div>
     `;
 
-    skillsGrid.appendChild(card);
+          skillsGrid.appendChild(card);
 
-  });
+        });
 
-  applyFilters();
+        applyFilters();
 
-})
+      })
 
-.catch(err => {
-  console.error(err);
-});
+      .catch(err => {
+        console.error(err);
+      });
 
-</script>
+  </script>
 </body>
 
 </html>
