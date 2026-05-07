@@ -8,6 +8,11 @@ require_once 'config.php';
 
 $conn = getConnection();
 
+function respond_json(array $payload): void {
+    echo json_encode($payload);
+    exit;
+}
+
 // ── POST — create swap request ───────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
@@ -26,39 +31,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status    = trim($data['status']       ?? ''); // 'accepted' or 'declined'
         
         if (!$requestId || !in_array($status, ['accepted', 'declined'])) {
-            echo json_encode(['success' => false, 'message' => 'Invalid parameters for status update.']);
-            exit;
+            respond_json(['success' => false, 'message' => 'Invalid parameters for status update.']);
         }
 
         $stmt = $conn->prepare("UPDATE swap_requests SET status = ? WHERE id = ?");
+        if (!$stmt) {
+            respond_json(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+        }
         $stmt->bind_param('si', $status, $requestId);
         if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'message' => 'Status updated successfully.']);
+            respond_json(['success' => true, 'message' => 'Status updated successfully.']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to update status.']);
+            respond_json(['success' => false, 'message' => 'Failed to update status.']);
         }
-        $stmt->close();
-        $conn->close();
-        exit;
     }
 
     // ── CREATE NEW REQUEST ──
     if (!$senderId || !$receiverId || !$skillOffered || !$skillWanted) {
-        echo json_encode(['success' => false, 'message' => 'sender_id, receiver_id, skill_offered, and skill_wanted are required.']);
-        exit;
+        respond_json(['success' => false, 'message' => 'sender_id, receiver_id, skill_offered, and skill_wanted are required.']);
     }
 
     $stmt = $conn->prepare("INSERT INTO swap_requests (sender_id, receiver_id, skill_offered, skill_wanted, message) VALUES (?, ?, ?, ?, ?)");
+    if (!$stmt) {
+        respond_json(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+    }
     $stmt->bind_param('iisss', $senderId, $receiverId, $skillOffered, $skillWanted, $message);
 
     if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Swap request sent successfully!']);
+        respond_json(['success' => true, 'message' => 'Swap request sent successfully!']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+        respond_json(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
     }
-    $stmt->close();
-    $conn->close();
-    exit;
 }
 
 // ── GET — list requests for a user ──────────
@@ -96,8 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt->close();
     $conn->close();
 
-    echo json_encode(['success' => true, 'data' => $requests]);
-    exit;
+    respond_json(['success' => true, 'data' => $requests]);
 }
 
-echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
+respond_json(['success' => false, 'message' => 'Invalid request method.']);

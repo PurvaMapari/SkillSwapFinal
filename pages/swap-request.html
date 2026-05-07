@@ -387,11 +387,18 @@
           message: document.getElementById('message').value.trim()
         })
       })
-        .then(res => {
+        .then(async res => {
+          const raw = await res.text();
+
           if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
+            throw new Error(raw || `HTTP error! status: ${res.status}`);
           }
-          return res.json();
+
+          try {
+            return JSON.parse(raw);
+          } catch (error) {
+            throw new Error(raw || 'Invalid JSON response from server.');
+          }
         })
         .then(res => {
           if (res.success) {
@@ -407,7 +414,7 @@
         })
         .catch(err => {
           console.error('Error:', err);
-          formError.textContent = 'Connection error. Try again.';
+          formError.textContent = err.message && err.message.trim() ? err.message : 'Connection error. Try again.';
           formError.style.display = 'block';
           btn.disabled = false;
           btn.textContent = 'Send Request →';
