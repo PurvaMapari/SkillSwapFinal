@@ -355,6 +355,12 @@
         return;
       }
 
+      const receiverId = parseInt(document.getElementById('receiver_id').value || '0', 10);
+      if (!receiverId) {
+        formError.textContent = 'Access this form from a teacher\'s profile to initiate a swap.';
+        formError.style.display = 'block';
+        return;
+      }
 
       const btn = this.querySelector('.btn-submit');
       btn.disabled = true;

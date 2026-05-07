@@ -43,59 +43,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // ── CREATE NEW REQUEST ──
-    if (!$senderId || !$skillOffered || !$skillWanted) {
-        echo json_encode(['success' => false, 'message' => 'sender_id, skill_offered, and skill_wanted are required.']);
+    if (!$senderId || !$receiverId || !$skillOffered || !$skillWanted) {
+        echo json_encode(['success' => false, 'message' => 'sender_id, receiver_id, skill_offered, and skill_wanted are required.']);
         exit;
     }
 
-    // receiver_id can be 0 or empty (open request)
+    $stmt = $conn->prepare("INSERT INTO swap_requests (sender_id, receiver_id, skill_offered, skill_wanted, message) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param('iisss', $senderId, $receiverId, $skillOffered, $skillWanted, $message);
 
-
-  $stmt = $conn->prepare("
-INSERT INTO swap_requests (
-    sender_id,
-    receiver_id,
-    skill_offered,
-    skill_wanted,
-    message
-)
-VALUES (?, ?, ?, ?, ?)
-");
-
-$stmt->bind_param(
-    'iisss',
-    $senderId,
-    $receiverId,
-    $skillOffered,
-    $skillWanted,
-    $message
-);
-
-if ($stmt->execute()) {
-    echo json_encode([
-        'success' => true,
-        'message' => 'Swap request sent successfully!'
-    ]);
-} else {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Database error: ' . $stmt->error
-    ]);
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Swap request sent successfully!']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+    }
+    $stmt->close();
+    $conn->close();
+    exit;
 }
-$stmt->close();
-$conn->close();
-exit;
 
 // ── GET — list requests for a user ──────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['user_id'])) {
         $uid = intval($_GET['user_id']);
-        $stmt = $conn->prepare(" 
-            SELECT sr.*, us.name AS sender_name, 
-                   CASE WHEN sr.receiver_id > 0 THEN ur.name ELSE 'Open Request' END AS receiver_name
+        $stmt = $conn->prepare("
+            SELECT sr.*, us.name AS sender_name, ur.name AS receiver_name
             FROM swap_requests sr
             JOIN users us ON sr.sender_id = us.id
-            LEFT JOIN users ur ON sr.receiver_id = ur.id
+            JOIN users ur ON sr.receiver_id = ur.id
             WHERE sr.sender_id = ? OR sr.receiver_id = ?
             ORDER BY sr.created_at DESC
         ");
@@ -103,12 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt->execute();
         $result = $stmt->get_result();
     } else {
-        $stmt = $conn->prepare(" 
-            SELECT sr.*, us.name AS sender_name, 
-                   CASE WHEN sr.receiver_id > 0 THEN ur.name ELSE 'Open Request' END AS receiver_name
+        $stmt = $conn->prepare("
+            SELECT sr.*, us.name AS sender_name, ur.name AS receiver_name
             FROM swap_requests sr
             JOIN users us ON sr.sender_id = us.id
-            LEFT JOIN users ur ON sr.receiver_id = ur.id
+            JOIN users ur ON sr.receiver_id = ur.id
             ORDER BY sr.created_at DESC
         ");
         $stmt->execute();
@@ -116,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     $requests = [];
-
     while ($row = $result->fetch_assoc()) {
         $requests[] = $row;
     }
@@ -124,11 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt->close();
     $conn->close();
 
-    echo json_encode([
-        'success' => true,
-        'data' => $requests
-    ]);
-
+    echo json_encode(['success' => true, 'data' => $requests]);
     exit;
 }
 
