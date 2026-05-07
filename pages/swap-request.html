@@ -337,13 +337,6 @@
       formError.style.display = 'none';
       formSuccess.style.display = 'none';
 
-      const receiverId = parseInt(document.getElementById('receiver_id').value || '', 10);
-      if (!receiverId) {
-        formError.textContent = 'Access this form from a teacher\'s profile to select who to swap with.';
-        formError.style.display = 'block';
-        return;
-      }
-
       // Validate required fields
       if (!skillWantedInput.value.trim()) {
         formError.textContent = 'Please enter a skill to learn.';
@@ -373,6 +366,8 @@
       const skillTitle = match ? match[1].trim() : fullText;
       const skillLevel = match ? match[2].trim() : '';
 
+      const receiverId = parseInt(document.getElementById('receiver_id').value || '0', 10);
+
       fetch('../api/swap_request.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -386,7 +381,12 @@
           message: document.getElementById('message').value.trim()
         })
       })
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
         .then(res => {
           if (res.success) {
             formSuccess.textContent = '🔥 Request sent successfully!';
@@ -400,6 +400,7 @@
           }
         })
         .catch(err => {
+          console.error('Error:', err);
           formError.textContent = 'Connection error. Try again.';
           formError.style.display = 'block';
           btn.disabled = false;

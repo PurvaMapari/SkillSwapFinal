@@ -43,10 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // ── CREATE NEW REQUEST ──
-    if (!$senderId || !$receiverId || !$skillOffered || !$skillWanted) {
-        echo json_encode(['success' => false, 'message' => 'sender_id, receiver_id, skill_offered, and skill_wanted are required.']);
+    if (!$senderId || !$skillOffered || !$skillWanted) {
+        echo json_encode(['success' => false, 'message' => 'sender_id, skill_offered, and skill_wanted are required.']);
         exit;
     }
+
+    // receiver_id can be 0 or empty (open request)
 
 
   $stmt = $conn->prepare("
@@ -70,31 +72,30 @@ $stmt->bind_param(
 );
 
 if ($stmt->execute()) {
-
     echo json_encode([
         'success' => true,
         'message' => 'Swap request sent successfully!'
     ]);
-
 } else {
-
     echo json_encode([
         'success' => false,
-        'message' => $stmt->error
+        'message' => 'Database error: ' . $stmt->error
     ]);
 }
-    exit;
-}
+$stmt->close();
+$conn->close();
+exit;
 
 // ── GET — list requests for a user ──────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['user_id'])) {
         $uid = intval($_GET['user_id']);
         $stmt = $conn->prepare(" 
-            SELECT sr.*, us.name AS sender_name, ur.name AS receiver_name
+            SELECT sr.*, us.name AS sender_name, 
+                   CASE WHEN sr.receiver_id > 0 THEN ur.name ELSE 'Open Request' END AS receiver_name
             FROM swap_requests sr
             JOIN users us ON sr.sender_id = us.id
-            JOIN users ur ON sr.receiver_id = ur.id
+            LEFT JOIN users ur ON sr.receiver_id = ur.id
             WHERE sr.sender_id = ? OR sr.receiver_id = ?
             ORDER BY sr.created_at DESC
         ");
@@ -103,10 +104,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $result = $stmt->get_result();
     } else {
         $stmt = $conn->prepare(" 
-            SELECT sr.*, us.name AS sender_name, ur.name AS receiver_name
+            SELECT sr.*, us.name AS sender_name, 
+                   CASE WHEN sr.receiver_id > 0 THEN ur.name ELSE 'Open Request' END AS receiver_name
             FROM swap_requests sr
             JOIN users us ON sr.sender_id = us.id
-            JOIN users ur ON sr.receiver_id = ur.id
+            LEFT JOIN users ur ON sr.receiver_id = ur.id
             ORDER BY sr.created_at DESC
         ");
         $stmt->execute();
