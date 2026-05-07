@@ -643,7 +643,7 @@
       btn.textContent = 'Saving...';
       const bio = document.getElementById('bio').value;
       const loc = document.getElementById('location').value;
-      fetch('../api/skills.php', {
+      fetch('../api/profile.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: currentUser.id, bio, location: loc })
