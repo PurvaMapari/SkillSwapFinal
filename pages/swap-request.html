@@ -217,6 +217,7 @@
       <div class="alert alert-success" id="formSuccess"></div>
 
       <form id="swapForm">
+        <input type="hidden" id="receiver_id" name="receiver_id">
         <div class="form-group">
           <label for="skill_wanted">Skill you want to learn</label>
           <input type="text" id="skill_wanted" name="skill_wanted" placeholder="e.g., Python, Graphic Design..."
@@ -269,6 +270,11 @@
 
     const formError = document.getElementById('formError');
     const formSuccess = document.getElementById('formSuccess');
+
+    // Set receiver_id from URL parameter if provided
+    if (teacherId) {
+      document.getElementById('receiver_id').value = teacherId;
+    }
 
 
 
@@ -331,6 +337,13 @@
       formError.style.display = 'none';
       formSuccess.style.display = 'none';
 
+      const receiverId = parseInt(document.getElementById('receiver_id').value || '', 10);
+      if (!receiverId) {
+        formError.textContent = 'Access this form from a teacher\'s profile to select who to swap with.';
+        formError.style.display = 'block';
+        return;
+      }
+
       // Validate required fields
       if (!skillWantedInput.value.trim()) {
         formError.textContent = 'Please enter a skill to learn.';
@@ -365,8 +378,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sender_id: currentUser.id,
-          receiver_id: teacherId,
-
+          receiver_id: receiverId,
           skill_offered: skillTitle,
           skill_wanted: skillWantedInput.value.trim(),
           skill_level: skillLevel,
