@@ -304,6 +304,13 @@
             option.textContent = `${skill.title} (${skill.skill_level})`;
             select.appendChild(option);
           });
+
+          if (!select.value && select.options.length > 1) {
+            select.selectedIndex = 1;
+            previewName.textContent = select.options[select.selectedIndex].text;
+            previewWanted.textContent = skillWantedInput.value || 'the requested skill';
+            preview.style.display = 'block';
+          }
         } else {
           select.innerHTML += '<option value="">No skills found. Please add some in your profile.</option>';
         }
